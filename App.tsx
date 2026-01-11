@@ -1,8 +1,25 @@
-
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_CATALOGS, INITIAL_SETTINGS, TESTIMONIALS as INITIAL_TESTIMONIALS, INITIAL_GALLERY } from './constants';
-import { Category, Product, Catalog, SiteSettings, Testimonial, GalleryImage } from './types';
+
+import { getCollection } from "./lib/firebase";
+
+import {
+  INITIAL_CATEGORIES,
+  INITIAL_PRODUCTS,
+  INITIAL_CATALOGS,
+  INITIAL_SETTINGS,
+  TESTIMONIALS as INITIAL_TESTIMONIALS,
+  INITIAL_GALLERY
+} from './constants';
+
+import {
+  Category,
+  Product,
+  Catalog,
+  SiteSettings,
+  Testimonial,
+  GalleryImage
+} from './types';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -35,11 +52,24 @@ const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) 
 };
 
 const App: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>(() => {
-    const saved = localStorage.getItem('hitech_categories');
-    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
-  });
+  // Firebase categories instead of localStorage
+  const [categories, setCategories] = useState<Category[]>([]);
 
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await getCollection("categories");
+        setCategories(data.length ? data : INITIAL_CATEGORIES);
+      } catch (err) {
+        console.error("Failed to load categories from Firebase:", err);
+        setCategories(INITIAL_CATEGORIES);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  // Keep these on localStorage for now, later we migrate them too
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('hitech_products');
     return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
@@ -69,10 +99,6 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('hitech_admin_pass');
     return saved || 'hitech@123';
   });
-
-  useEffect(() => {
-    localStorage.setItem('hitech_categories', JSON.stringify(categories));
-  }, [categories]);
 
   useEffect(() => {
     localStorage.setItem('hitech_products', JSON.stringify(products));
@@ -116,29 +142,29 @@ const App: React.FC = () => {
 
         {/* Protected Admin Routes */}
         <Route path="/admin" element={<PrivateRoute><AdminDashboard categories={categories} products={products} catalogs={catalogs} /></PrivateRoute>} />
-        <Route 
-          path="/admin/categories" 
-          element={<PrivateRoute><AdminCategories categories={categories} setCategories={setCategories} /></PrivateRoute>} 
+        <Route
+          path="/admin/categories"
+          element={<PrivateRoute><AdminCategories categories={categories} setCategories={setCategories} /></PrivateRoute>}
         />
-        <Route 
-          path="/admin/products" 
-          element={<PrivateRoute><AdminProducts products={products} categories={categories} setProducts={setProducts} /></PrivateRoute>} 
+        <Route
+          path="/admin/products"
+          element={<PrivateRoute><AdminProducts products={products} categories={categories} setProducts={setProducts} /></PrivateRoute>}
         />
-        <Route 
-          path="/admin/catalogs" 
-          element={<PrivateRoute><AdminCatalogs catalogs={catalogs} setCatalogs={setCatalogs} /></PrivateRoute>} 
+        <Route
+          path="/admin/catalogs"
+          element={<PrivateRoute><AdminCatalogs catalogs={catalogs} setCatalogs={setCatalogs} /></PrivateRoute>}
         />
-        <Route 
-          path="/admin/settings" 
-          element={<PrivateRoute><AdminSettings settings={settings} setSettings={setSettings} adminPassword={adminPassword} setAdminPassword={setAdminPassword} /></PrivateRoute>} 
+        <Route
+          path="/admin/settings"
+          element={<PrivateRoute><AdminSettings settings={settings} setSettings={setSettings} adminPassword={adminPassword} setAdminPassword={setAdminPassword} /></PrivateRoute>}
         />
-        <Route 
-          path="/admin/testimonials" 
-          element={<PrivateRoute><AdminTestimonials testimonials={testimonials} setTestimonials={setTestimonials} /></PrivateRoute>} 
+        <Route
+          path="/admin/testimonials"
+          element={<PrivateRoute><AdminTestimonials testimonials={testimonials} setTestimonials={setTestimonials} /></PrivateRoute>}
         />
-        <Route 
-          path="/admin/gallery" 
-          element={<PrivateRoute><AdminGallery gallery={gallery} setGallery={setGallery} /></PrivateRoute>} 
+        <Route
+          path="/admin/gallery"
+          element={<PrivateRoute><AdminGallery gallery={gallery} setGallery={setGallery} /></PrivateRoute>}
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />

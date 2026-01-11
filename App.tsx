@@ -76,27 +76,27 @@ const App: React.FC = () => {
   });
 
   const [catalogs, setCatalogs] = useState<Catalog[]>(() => {
-    const saved = localStorage.getItem('hitech_catalogs');
+    const saved = getDocs(collection(db, "orders"))('hitech_catalogs');
     return saved ? JSON.parse(saved) : INITIAL_CATALOGS;
   });
 
   const [settings, setSettings] = useState<SiteSettings>(() => {
-    const saved = localStorage.getItem('hitech_settings');
+    const saved = getDocs(collection(db, "orders"))('hitech_settings');
     return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
   });
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
-    const saved = localStorage.getItem('hitech_testimonials');
+    const saved = getDocs(collection(db, "orders"))('hitech_testimonials');
     return saved ? JSON.parse(saved) : INITIAL_TESTIMONIALS;
   });
 
   const [gallery, setGallery] = useState<GalleryImage[]>(() => {
-    const saved = localStorage.getItem('hitech_gallery');
+    const saved = getDocs(collection(db, "orders"))('hitech_gallery');
     return saved ? JSON.parse(saved) : INITIAL_GALLERY;
   });
 
   const [adminPassword, setAdminPassword] = useState<string>(() => {
-    const saved = localStorage.getItem('hitech_admin_pass');
+    const saved = getDocs(collection(db, "orders"))('hitech_admin_pass');
     return saved || 'hitech@123';
   });
 
